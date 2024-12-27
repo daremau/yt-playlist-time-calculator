@@ -23,7 +23,9 @@ def get_playlist_videos(playlist_url):
 
 def get_video_durations(video_ids):
     durations = []
+    video_count = 0
     for video_id in video_ids:
+        print(f"\nFetching video {video_count + 1}...")
         video_url = f"https://www.youtube.com/watch?v={video_id}"
         response = requests.get(video_url)
         if response.status_code != 200:
@@ -33,8 +35,13 @@ def get_video_durations(video_ids):
         soup = BeautifulSoup(response.text, "html.parser")
         duration_tag = soup.find("meta", itemprop="duration")
         if duration_tag:
-            duration = isodate.parse_duration(duration_tag["content"])
-            durations.append(duration)
+            try:
+                duration = isodate.parse_duration(duration_tag["content"])
+                durations.append(duration)
+                video_count += 1
+            except:
+                print("Error fetching video - skipping...")
+                continue
 
     return durations
 
@@ -62,10 +69,10 @@ def main():
     durations = get_video_durations(video_ids)
 
     # Calculate total duration
+    print("\nCalculating total duration...")
     total_duration = calculate_total_duration(durations)
     print("Total playlist duration: ", total_duration)
+    print(f"\nFinished processing {len(durations)} videos!")
 
 if __name__ == "__main__":
     main()
-
-
